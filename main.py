@@ -1,18 +1,11 @@
 import sqlite3
-from PyQt5 import QtWidgets
-from Screens import reglog_ui
+from PyQt5 import QtWidgets, uic
+from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem
+
+from Screens import reglog_ui, table_dialog
 
 db = sqlite3.connect('main_db.db')
 cursor = db.cursor()
-
-# Create the 'test_login' table if it doesn't exist
-cursor.execute('''
-    CREATE TABLE IF NOT EXISTS test_login (
-        login TEXT PRIMARY KEY,
-        password TEXT
-    )
-''')
-db.commit()
 
 class Registration(QtWidgets.QMainWindow, reglog_ui.Ui_MainWindow):
     def __init__(self):
@@ -55,7 +48,8 @@ class Registration(QtWidgets.QMainWindow, reglog_ui.Ui_MainWindow):
 class Login(QtWidgets.QMainWindow, reglog_ui.Ui_MainWindow):
     def __init__(self):
         super(Login, self).__init__()
-        self.setupUi(self)
+        uic.loadUi('Screens/reglog.ui', self)
+        # self.setupUi(self)
         self.label.setText('')
         self.label_2.setText('Логин')
         self.lineEdit.setPlaceholderText('Введите логин')
@@ -88,7 +82,41 @@ class Login(QtWidgets.QMainWindow, reglog_ui.Ui_MainWindow):
         else:
             self.label.setText('Ошибка авторизации!')
 
-App = QtWidgets.QApplication([])
-window = Login()
-window.show()
-App.exec()
+
+class Table(QtWidgets.QMainWindow, table_dialog.Ui_MainWindow):
+    def __init__(self):
+        super(Table, self).__init__()
+        self.setupUi(self)
+
+        self.tableWidget.setColumnWidth(0,250)
+        self.tableWidget.setColumnWidth(1,250)
+        self.loaddata()
+
+    def loaddata(self):
+        cursor.execute("""
+            select * from test_login
+        """
+        )
+        names = list(map(lambda x: x[0], cursor.description))
+        dict = cursor.fetchall()
+        self.tableWidget.setRowCount(len(names))
+        self.tableWidget.setColumnCount(len(names))
+
+        # Заполните ячейки таблицы данными из базы данных
+        for row_index, row_data in enumerate(dict):
+            for col_index, cell_data in enumerate(row_data):
+                item = QTableWidgetItem(str(cell_data))
+                self.tableWidget.setItem(row_index, col_index, item)
+
+
+
+
+
+
+
+
+if __name__ == '__main__':
+    App = QtWidgets.QApplication([])
+    window = Table()
+    window.show()
+    App.exec()

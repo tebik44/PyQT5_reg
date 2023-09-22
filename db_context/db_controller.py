@@ -7,6 +7,16 @@ class DB:
         self.con = sqlite3.connect('../main_db.db')
         self.cursor = self.con.cursor()
 
+
+    def create_table_all(self):
+        cursor = self.cursor()
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS test_login (
+                login TEXT PRIMARY KEY,
+                password TEXT
+            )
+        ''')
+
     def login(self):
         user_login = self.lineEdit.text()
         user_password = self.lineEdit_2.text()
